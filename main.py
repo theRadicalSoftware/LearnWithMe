@@ -26,6 +26,10 @@ create_account_bg = pygame.image.load("/home/rory/LearningGame/assets/images/cre
 create_account_bg = pygame.transform.scale(create_account_bg, (screen_width, screen_height))
 choose_account_bg = pygame.image.load("/home/rory/LearningGame/assets/images/chooseAccount_screen.png")
 choose_account_bg = pygame.transform.scale(choose_account_bg, (screen_width, screen_height))
+game_mode_bg = pygame.image.load("/home/rory/LearningGame/assets/images/game_mode_screen.png")
+game_mode_bg = pygame.transform.scale(game_mode_bg, (screen_width, screen_height))
+classroom_screen_bg = pygame.image.load("/home/rory/LearningGame/assets/images/classroom_screen.png")
+classroom_screen_bg = pygame.transform.scale(classroom_screen_bg, (screen_width, screen_height))
 level_selector_bg = pygame.image.load("/home/rory/LearningGame/assets/images/level_selector_screen.png")
 level_selector_bg = pygame.transform.scale(level_selector_bg, (screen_width, screen_height))
 
@@ -658,12 +662,14 @@ def pig_care_level_screen(selected_account):
 
 
 
-# Updated level_selector_screen
 def level_selector_screen(selected_account):
     is_jumping = False  # Flag to indicate if the profile picture is jumping
     jump_frame = 0  # Frame counter for the jump animation
     jump_height = 70  # Maximum height of the jump
     jump_duration = 180  # Total frames for the jump
+
+    # Adjust the position of the back arrow image
+    back_arrow_rect = back_arrow_img.get_rect(bottomleft=(20, screen_height - 30))
 
     while True:
         mouse_pos = pygame.mouse.get_pos()  # Get the current mouse position
@@ -677,6 +683,10 @@ def level_selector_screen(selected_account):
                     is_jumping = True
                     jump_frame = 0  # Reset the frame counter for the jump
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Check if the back arrow was clicked
+                if back_arrow_rect.collidepoint(mouse_pos):
+                    game_mode_screen(selected_account)  # Navigate back to the game mode screen
+                    return
                 # Check if the apple picker portal was clicked
                 if apple_portal_rect.collidepoint(mouse_pos):
                     apple_picker_level_screen(selected_account)  # Navigate to the apple picker level screen
@@ -735,9 +745,82 @@ def level_selector_screen(selected_account):
         else:
             screen.blit(pig_care_portal, (pig_portal_x, pig_portal_y))  # Regular portal rendering
 
+        # Draw the back arrow at the bottom left corner
+        screen.blit(back_arrow_img, back_arrow_rect)
+
         pygame.display.flip()
 
 
+def classroom_screen(selected_account):
+    # Adjusted button sizes and positions for a sleeker look
+    button_width, button_height = 140, 50
+    spacing = 20  # Space between buttons
+
+    # Define button positions
+    math_fun_button_rect = pygame.Rect(screen_width // 2 - button_width - spacing - 63, screen_height // 2 - 110, button_width, button_height)
+    spelling_bee_button_rect = pygame.Rect(screen_width // 2 - button_width // 2 + 19, screen_height // 2 - 110, button_width, button_height)
+    memory_game_button_rect = pygame.Rect(screen_width // 2 + button_width + spacing - 40, screen_height // 2 - 110, button_width, button_height)
+    report_card_button_rect = pygame.Rect(screen_width // 2 - button_width // 2 + 17, screen_height // 2 + 60, button_width, button_height)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                save_accounts()
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                # Check button interactions
+                if math_fun_button_rect.collidepoint(mouse_pos):
+                    print("Math Fun selected")
+                    # Add logic for Math Fun
+                elif spelling_bee_button_rect.collidepoint(mouse_pos):
+                    print("Spelling Bee selected")
+                    # Add logic for Spelling Bee
+                elif memory_game_button_rect.collidepoint(mouse_pos):
+                    print("Memory Game selected")
+                    # Add logic for Memory Game
+                elif report_card_button_rect.collidepoint(mouse_pos):
+                    print("Report Card selected")
+                    # Add logic for Report Card
+                elif back_button_rect.collidepoint(mouse_pos):
+                    return game_mode_screen(selected_account)
+
+        # Draw the classroom screen background
+        screen.blit(classroom_screen_bg, (0, 0))
+
+        # Back button
+        back_button_text = button_font.render("Back", True, button_text_color)
+        back_button_rect = back_button_text.get_rect(topleft=(15, 560))
+        draw_textured_button(screen, back_button_text, back_button_rect, button_color, button_shadow_color)
+
+        # Math Fun button
+        math_fun_text = button_font.render("Math Fun", True, button_text_color)
+        draw_textured_button(
+            screen, math_fun_text, math_fun_button_rect, button_color, button_shadow_color, hover=False
+        )
+
+        # Spelling Bee button
+        spelling_bee_text = button_font.render("Spelling Bee", True, button_text_color)
+        draw_textured_button(
+            screen, spelling_bee_text, spelling_bee_button_rect, button_color, button_shadow_color, hover=False
+        )
+
+        # Memory Game button
+        memory_game_text = button_font.render("Memory", True, button_text_color)
+        draw_textured_button(
+            screen, memory_game_text, memory_game_button_rect, button_color, button_shadow_color, hover=False
+        )
+
+        # Report Card button (different color)
+        report_card_text = button_font.render("Report Card", True, (255, 255, 255))  # White text for contrast
+        report_card_color = (80, 140, 200)  # Blueish color
+        report_card_shadow_color = (60, 110, 160)
+        draw_textured_button(
+            screen, report_card_text, report_card_button_rect, report_card_color, report_card_shadow_color, hover=False
+        )
+
+        pygame.display.flip()
 
 
 # Function to handle the "Start Learning" screen
@@ -829,7 +912,7 @@ def choose_account_screen():
                     return
                 if continue_button_rect and continue_button_rect.collidepoint(mouse_pos):
                     if selected_account:  # Ensure an account is selected
-                        level_selector_screen(selected_account)  # Pass the selected account
+                        game_mode_screen(selected_account)  # Navigate to the game mode screen
                         return
                 y_offset = 150
                 for account in accounts:
@@ -858,6 +941,49 @@ def choose_account_screen():
 
         screen.blit(back_arrow_img, back_arrow_rect)
         pygame.display.flip()
+
+
+def game_mode_screen(selected_account):
+    go_to_class_button_rect = None
+    mini_games_button_rect = None
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                save_accounts()
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if go_to_class_button_rect and go_to_class_button_rect.collidepoint(mouse_pos):
+                    # Go to class logic here
+                    classroom_screen(selected_account)
+                    return
+                if mini_games_button_rect and mini_games_button_rect.collidepoint(mouse_pos):
+                    # Mini-games logic here
+                    level_selector_screen(selected_account)  # Navigate to the game mode screen
+                    return
+
+        # Draw the background
+        screen.blit(game_mode_bg, (0, 0))
+
+        # Display the "Choose Game Mode" text
+        title_text = button_font.render("Choose Game Mode", True, (255, 255, 255))
+        title_rect = title_text.get_rect(center=(screen_width // 2 + 30, 116))
+        screen.blit(title_text, title_rect)
+
+        # Draw the buttons
+        go_to_class_text = button_font.render("Go To Class", True, button_text_color)
+        mini_games_text = button_font.render("Mini-Games", True, button_text_color)
+
+        go_to_class_button_rect = go_to_class_text.get_rect(center=(screen_width // 2 + 35, screen_height // 2 - 50))
+        mini_games_button_rect = mini_games_text.get_rect(center=(screen_width // 2 + 35, screen_height // 2 + 50))
+
+        draw_textured_button(screen, go_to_class_text, go_to_class_button_rect, button_color, button_shadow_color)
+        draw_textured_button(screen, mini_games_text, mini_games_button_rect, button_color, button_shadow_color)
+
+        pygame.display.flip()
+
 
 # Game loop for the title screen
 running = True
